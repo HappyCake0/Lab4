@@ -1,0 +1,59 @@
+body{
+  text-align:center;
+  background-color: #d2d2d2; /* темно-серый фон */
+}
+#time{
+  padding-right:7%;
+  padding-bottom:1%;
+}
+#datetime1{
+  border: 3px solid #03a9f4;
+}
+#datetime2{
+  border: 3px solid #03a9f4;
+}
+.canvas {
+  width: 37vw; /* 90% ширины окна браузера */
+  height: 37vh; /* 90% высоты окна браузера */
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 столбца */
+  grid-template-rows: repeat(3, 1fr); /* 3 строки */
+  gap: 10px; /* пространство между элементами */
+  place-items: center; /* центрирование элементов */
+  grid-template-columns: auto; /* автоматическое сужение и расширение столбцов */
+  grid-template-rows: auto; /* автоматическое сужение и расширение строк */
+  padding-left:10%;
+}
+
+
+#CPUt {
+  grid-column: 1 / span 1; /* размещаем в первом столбце */
+  grid-row: 1 / span 1; /* в первой строке */
+  border: 2px solid #0323f4;
+}
+
+#CPUn{
+  grid-column: 2 / span 1; /* размещаем во втором столбце */
+  grid-row: 1 / span 1; /* в первой строке */
+  border: 2px solid #0323f4;
+
+}
+
+#GPUt {
+  grid-column: 1 / span 1; /* размещаем в первом столбце */
+  grid-row: 2 / span 1; /* во второй строке */
+  border: 2px solid #0323f4;
+}
+
+#GPUn {
+  grid-column: 2 / span 1; /* размещаем во втором столбце */
+  grid-row: 2 / span 1; /* во второй строке */
+  border: 2px solid #0323f4;
+}
+
+#MEM {
+  grid-column: 1 / span 2; /* растягиваем на два столбца */
+  grid-row: 3 / span 1; /* в третьей строке */
+  justify-self: center; /* центрируем по горизонтали */
+  border: 2px solid #0323f4;
+}
