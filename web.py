@@ -17,8 +17,8 @@ def index():
 def pars_request():
     data = request.get_json()
     res = what_to_read(data['datetime-from'], data['datetime-to'], data['approximate'])
-    #res = utils.read_stat("2024-01-01")
-    #res = utils.approximate(res, "day")
+    # res = utils.read_stat("2024-01-01")
+    # res = utils.approximate(res, "day")
     return jsonify(res)
 
 
@@ -42,16 +42,24 @@ def read_mins(date_start, date_end):
     data = utils.read_stat(day)
     records_to_read = mins_end - mins_start + 1
     record_start = hour * 60 + mins_start
-    new_data = data[record_start:record_start+records_to_read]
+    new_data = data[record_start:record_start + records_to_read]
     return new_data
 
-def read_hours():
-    return 0
+
+def read_hours(date_start, date_end):
+    if date_start[:-6] != date_end[:-6]:
+        return 0
+    day = str(date_start[:-6])
+    hour_start = int(str(date_start).split(":")[1].split("-")[0])
+    hour_end = int(str(date_end).split(":")[1].split("-")[0])
+    records_to_read = hour_end - hour_start +1
+    data = utils.approximate(data=utils.read_stat(day), measure="hour")
+    new_data = data[hour_start:hour_start + records_to_read]
+    return new_data
 
 
 def read_days():
     return 0
-#test
 
 
 def read_weeks():
