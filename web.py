@@ -35,10 +35,10 @@ def what_to_read(date_start, date_end, selector):
 def read_mins(date_start, date_end):
     if date_start[:-3] != date_end[:-3]:
         return 0
-    day = str(date_start[:-6])
-    hour = int(str(date_start).split(":")[1].split("-")[0])
-    mins_start = int(str(date_start).split(":")[1].split("-")[1])
-    mins_end = int(str(date_end).split(":")[1].split("-")[1])
+    day = get_date_WT(date_start)
+    hour = int(get_hour(date_start))
+    mins_start = int(get_min(date_start))
+    mins_end = int(get_min(date_end))
     data = utils.read_stat(day)
     records_to_read = mins_end - mins_start + 1
     record_start = hour * 60 + mins_start
@@ -49,21 +49,58 @@ def read_mins(date_start, date_end):
 def read_hours(date_start, date_end):
     if date_start[:-6] != date_end[:-6]:
         return 0
-    day = str(date_start[:-6])
-    hour_start = int(str(date_start).split(":")[1].split("-")[0])
-    hour_end = int(str(date_end).split(":")[1].split("-")[0])
-    records_to_read = hour_end - hour_start +1
+    day = get_date_WT(date_start)
+    hour_start = int(get_hour(date_start))
+    hour_end = int(get_hour(date_end))
+    records_to_read = hour_end - hour_start + 1
     data = utils.approximate(data=utils.read_stat(day), measure="hour")
     new_data = data[hour_start:hour_start + records_to_read]
     return new_data
 
 
-def read_days():
-    return 0
+def read_days(date_start, date_end):
+    if get_date_WT(date_start) == get_date_WT(date_end):
+        return 0
+    day_start = get_date_WT(date_start)
+    days_amount = int(get_day(date_end)) - int(get_day(date_start)) + 1
+    current_day = day_start
+    new_data = []
+    for i in range(days_amount):
+        new_item = utils.approximate(data=utils.read_stat(current_day), measure="day")
+        new_item[0]["time"] = "00-" + get_day(current_day)
+        new_data.append(new_item[0])
+        print(new_data)
+        if len(str(int(get_day(current_day)))) == 1:
+            current_day = current_day[:-2] + "0" + str(int(get_day(current_day)) + 1)
+    return new_data
+
 
 
 def read_weeks():
     return 0
+
+
+def get_hour(date):
+    hour = date.split(":")[1].split("-")[0]
+    return hour
+
+
+def get_min(date):
+    min = date.split(":")[1].split("-")[1]
+    return min
+
+
+def get_day(date):
+    if len(date) > 10:
+        day = date.split(":")[0].split("-")[2]
+    else:
+        day = date.split("-")[2]
+    return day
+
+
+def get_date_WT(date):
+    new_date = date[:-6]
+    return new_date
 
 
 if name == 'main':
