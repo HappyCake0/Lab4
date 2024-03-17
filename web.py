@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 import json
 import utils
+from datetime import datetime
 
 name = 'main'
 app = Flask(name, template_folder="static")
@@ -33,8 +34,8 @@ def what_to_read(date_start, date_end, selector):
 
 
 def read_mins(date_start, date_end):
-    if date_start[:-3] != date_end[:-3]:
-        return 0
+    if (date_start[:-3] != date_end[:-3]) | (date_start == "") | (date_end == ""):
+        return zero()
     day = get_date_WT(date_start)
     hour = int(get_hour(date_start))
     mins_start = int(get_min(date_start))
@@ -47,8 +48,8 @@ def read_mins(date_start, date_end):
 
 
 def read_hours(date_start, date_end):
-    if date_start[:-6] != date_end[:-6]:
-        return 0
+    if (date_start[:-6] != date_end[:-6]) | (date_start == "") | (date_end == ""):
+        return zero()
     day = get_date_WT(date_start)
     hour_start = int(get_hour(date_start))
     hour_end = int(get_hour(date_end))
@@ -60,7 +61,7 @@ def read_hours(date_start, date_end):
 
 def read_days(date_start, date_end):
     if get_date_WT(date_start) == get_date_WT(date_end):
-        return 0
+        return zero()
     day_start = get_date_WT(date_start)
     days_amount = int(get_day(date_end)) - int(get_day(date_start)) + 1
     current_day = day_start
@@ -70,14 +71,33 @@ def read_days(date_start, date_end):
         new_item[0]["time"] = "00-" + get_day(current_day)
         new_data.append(new_item[0])
         print(new_data)
-        if len(str(int(get_day(current_day)))) == 1:
+        if int(get_day(current_day)) < 9:
             current_day = current_day[:-2] + "0" + str(int(get_day(current_day)) + 1)
+        else:
+            current_day = current_day[:-2] + str(int(get_day(current_day)) + 1)
     return new_data
 
 
-
-def read_weeks():
-    return 0
+def read_weeks(date_start, date_end):
+    interval = (datetime.strptime(get_date_WT(date_end), '%Y-%m-%d').date()
+                - datetime.strptime(get_date_WT(date_start), '%Y-%m-%d').date())
+    interval_in_days = int(str(interval).split(" ")[0]) + 1
+    if interval_in_days % 7 != 0:
+        return zero()
+    data = read_days(date_start, date_end)
+    new_data = utils.make_time(int(interval_in_days/7))
+    current_week = 0
+    stats_names = utils.get_from_config('stats_names')
+    for week in new_data:
+        week["time"] = current_week
+        for i in range(0, interval_in_days, 7):
+            for j in range(7):
+                for stat in stats_names:
+                    week["data"][stat] += data[i+j]["data"][stat]
+        for i in stats_names:
+            week['data'][i] /= 7
+        current_week += 1
+    return new_data
 
 
 def get_hour(date):
@@ -101,6 +121,20 @@ def get_day(date):
 def get_date_WT(date):
     new_date = date[:-6]
     return new_date
+
+
+def zero():
+    zero_data = [{
+            "time": f"00-00",
+            "data": {
+                "memory": 0.0,
+                "CPU_t": 0.0,
+                "CPU_N": 0.0,
+                "GPU_t": 0.0,
+                "GPU_N": 0.0
+            }
+        }]
+    return zero_data
 
 
 if name == 'main':
