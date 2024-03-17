@@ -16,7 +16,7 @@ def get_RAM_stats():
     return str((used / total) * 100.0)
 
 
-def get_GPU_t_stats(): #траблы, траблы, траблы....
+def get_GPU_t_stats(): #траблы, траблы, траблы.....
     command = "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader"
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if result.returncode == 0:
