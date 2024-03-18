@@ -4,8 +4,11 @@
 	"debug": true,
 	"critical_stats": {
 		"memory": "10",
+		"CPU_N": "10",
+		"GPU_t": "10",
 		"CPU_t": "10",
-		"CPU_N": "10"
+		"GPU_N": "10"
 	},
+	"moder_email": "chepurin_ilya@mail.ru",
 	"stats_names": ["memory", "CPU_t", "CPU_N", "GPU_t", "GPU_N"]
 }

@@ -2,9 +2,37 @@ import subprocess
 import json
 import time
 import datetime
+import smtplib
 
 with open("config.json", "r") as j:
     cfg = json.loads(j.read())
+
+
+def send_email(stats, encode='utf-8'):
+    text = ""
+    for i in stats['data']:
+        text += i + ": " + str(stats['data'][i]) + '\n'
+    subject = "got critical stats"
+    to_addr = cfg['moder_email']
+    from_addr = "ilya.chepurin.01@mail.ru"
+    passwd = "hUWjCaEnAsVNtH8rxWnR"
+    server = "smtp.mail.ru"
+    port = 465
+    charset = f'Content-Type: text/plain; charset={encode}'
+    mime = 'MIME-Version: 1.0'
+    body = "\r\n".join((f"From: {from_addr}", f"To: {to_addr}",
+           f"Subject: {subject}", mime, charset, "", text))
+
+    try:
+        smtp = smtplib.SMTP_SSL(server, port)
+        smtp.ehlo()
+        smtp.login(from_addr, passwd)
+        smtp.sendmail(from_addr, to_addr, body.encode(encode))
+    except smtplib.SMTPException as err:
+        print('Что - то пошло не так...')
+        raise err
+    finally:
+        smtp.quit()
 
 
 def get_RAM_stats():
@@ -16,7 +44,7 @@ def get_RAM_stats():
     return str((used / total) * 100.0)
 
 
-def get_GPU_t_stats(): #траблы, траблы, траблы.....
+def get_GPU_t_stats(): #TODO добыть статы (в докере не видит драйвер)
     command = "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader"
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if result.returncode == 0:
@@ -34,6 +62,17 @@ def get_CPU_N_stats():
         return str(float(output.decode()))
 
 
+def check_critical_stats(stats):
+    for i in stats['data']:
+        if stats['data'][i] >= cfg['critical_stats'][i]:
+            send_email(stats)
+            stats['data']['runned_procces'] = "" #TODO: добавить парсер всех имен процессов из ps -ef
+            with open(f"criticalstats/{filename}", "a+") as f:
+                f.write(json.dumps(stats))
+                f.write(',')
+            return 0
+
+
 while True:
     filename = datetime.datetime.now().strftime("%Y-%m-%d.json")
     current_time = datetime.datetime.now()
@@ -42,8 +81,6 @@ while True:
     RAM_data = get_RAM_stats()
     CPU_N_data = get_CPU_N_stats()
     GPU_t_data = get_GPU_t_stats()
-    if RAM_data >= cfg['critical_stats']['memory']: #добавить ост. парам-ры
-        print('panic')
     stats = {
         "time": current_time,
         "data": {
@@ -54,7 +91,10 @@ while True:
             "GPU_N": "30"
         }
     }
+    check_critical_stats(stats)
     with open(f"stats/{filename}", "a+") as f:
         f.write(json.dumps(stats))
         f.write(',')
-    time.sleep(2)
+    time.sleep(10)
+
+

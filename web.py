@@ -35,7 +35,7 @@ def what_to_read(date_start, date_end, selector):
 
 def read_mins(date_start, date_end):
     if (date_start[:-3] != date_end[:-3]) | (date_start == "") | (date_end == ""):
-        return zero()
+        return utils.make_time(1)
     day = get_date_WT(date_start)
     hour = int(get_hour(date_start))
     mins_start = int(get_min(date_start))
@@ -49,7 +49,7 @@ def read_mins(date_start, date_end):
 
 def read_hours(date_start, date_end):
     if (date_start[:-6] != date_end[:-6]) | (date_start == "") | (date_end == ""):
-        return zero()
+        return utils.make_time(1)
     day = get_date_WT(date_start)
     hour_start = int(get_hour(date_start))
     hour_end = int(get_hour(date_end))
@@ -61,7 +61,7 @@ def read_hours(date_start, date_end):
 
 def read_days(date_start, date_end):
     if get_date_WT(date_start) == get_date_WT(date_end):
-        return zero()
+        return utils.make_time(1)
     day_start = get_date_WT(date_start)
     days_amount = int(get_day(date_end)) - int(get_day(date_start)) + 1
     current_day = day_start
@@ -83,7 +83,7 @@ def read_weeks(date_start, date_end):
                 - datetime.strptime(get_date_WT(date_start), '%Y-%m-%d').date())
     interval_in_days = int(str(interval).split(" ")[0]) + 1
     if interval_in_days % 7 != 0:
-        return zero()
+        return utils.make_time(1)
     data = read_days(date_start, date_end)
     new_data = utils.make_time(int(interval_in_days/7))
     current_week = 0
@@ -123,19 +123,12 @@ def get_date_WT(date):
     return new_date
 
 
-def zero():
-    zero_data = [{
-            "time": f"00-00",
-            "data": {
-                "memory": 0.0,
-                "CPU_t": 0.0,
-                "CPU_N": 0.0,
-                "GPU_t": 0.0,
-                "GPU_N": 0.0
-            }
-        }]
-    return zero_data
+def read_stat(date):
+    with open(f"/app/stats/{date}.json", 'r') as f:
+        stats = f.read()
 
+    data = json.loads(f"[{stats[:-1]}]")
+    return utils.round_stats(data)
 
 if name == 'main':
     app.run(debug=cfg['debug'], host=cfg['host'], port=cfg['port'])
